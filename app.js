@@ -1,5 +1,5 @@
 import { CONFIG as C } from './config.js';
-import { qaCreate, showQA } from './qa.js?v=6';
+import { qaCreate, showQA } from './qa.js?v=7';
 const $ = (s) => document.querySelector(s), enc = new TextEncoder(), dec = new TextDecoder();
 const b64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
