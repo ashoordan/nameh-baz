@@ -1,4 +1,5 @@
 import { CONFIG as C } from './config.js';
+import { qaCreate, showQA } from './qa.js';
 const $ = (s) => document.querySelector(s), enc = new TextEncoder(), dec = new TextDecoder();
 const b64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
@@ -49,6 +50,7 @@ const pst = (p) => {
   return `background:${pp[1]};color:${col};font-family:${FONTS.includes(p.font) ? p.font : 'Vazirmatn'},Vazirmatn,sans-serif;font-size:${sz}px;text-align:${ALIGN.includes(p.align) ? p.align : 'right'}`;
 };
 const showLetter = (el, p, o) => {
+  if (p.kind === 'qa') return showQA(el, p, o, H);
   const opts = Array.isArray(p.opts) ? p.opts : [];
   el.innerHTML = `<div class="paper ${p.paper === 'texture' ? 'tx' : ''}" style="${pst(p)}"><h2>${esc(p.title)}</h2><div class="bd2">${esc(p.body)}</div><p>${esc(p.sig)}</p><small>${p.name ? 'از طرف ' + esc(p.name) : 'فرستنده ناشناس'}</small>${opts.length ? `<div class="ops">${p.q ? `<p><b>${esc(p.q)}</b></p>` : ''}${opts.map((x, i) => `<button class="btn ghost" data-o="${i}">${esc(x[0])}</button>`).join('')}<p class="rx"></p></div>` : ''}${links(p.ct)}</div>`;
   el.querySelectorAll('[data-o]').forEach((b) => b.onclick = async () => {
@@ -141,7 +143,7 @@ async function manage(x) {
 }
 
 // ---------- Static pages ----------
-const home = () => view(`<section class="hero"><div><h1>بعضی حرف‌ها، لایق یک نامه‌اند.</h1><p>نامه‌ای بساز، رمز اختصاصی براش انتخاب کن و با یک لینک، به دست کسی برسون که باید بخوندش.</p><a class="btn" href="#/create">نوشتن یک نامه جدید</a> <button class="btn ghost" data-sc>نامه چطور کار می‌کنه؟</button></div>${envH()}</section><div class="grid">${[['بدون ثبت‌نام', 'حساب نمی‌خوای، فقط بنویس.'], ['نامه‌های رمزدار', 'فقط با رمز اختصاصی باز می‌شه.'], ['طراحی و شخصی‌سازی', 'کاغذ، پاکت، مهر و لحن با خودته.'], ['حفظ حریم خصوصی', 'رمزگذاری توی مرورگر خودت انجام می‌شه.']].map((x) => `<div class="fx"><b>${x[0]}</b><br>${x[1]}</div>`).join('')}</div><h2 id="how">نامه چطور کار می‌کنه؟</h2><div class="grid">${['نامه‌ات را طراحی کن.', 'رمز و لینک اختصاصی بساز.', 'لینک را برای مخاطبت بفرست.'].map((x, i) => `<div class="fx"><b>${i + 1}</b> ${x}</div>`).join('')}</div><div class="mid"><h2>اولین نامه‌ات رو بنویس</h2><a class="btn" href="#/create">شروع کن</a></div>`);
+const home = () => view(`<section class="hero"><div><h1>بعضی حرف‌ها، لایق یک نامه‌اند.</h1><p>نامه‌ای بساز، رمز اختصاصی براش انتخاب کن و با یک لینک، به دست کسی برسون که باید بخوندش.</p><a class="btn" href="#/create">نوشتن یک نامه جدید</a> <a class="btn ghost" href="#/qa">سوال و جواب</a> <button class="btn ghost" data-sc>نامه چطور کار می‌کنه؟</button></div>${envH()}</section><div class="grid">${[['بدون ثبت‌نام', 'حساب نمی‌خوای، فقط بنویس.'], ['نامه‌های رمزدار', 'فقط با رمز اختصاصی باز می‌شه.'], ['طراحی و شخصی‌سازی', 'کاغذ، پاکت، مهر و لحن با خودته.'], ['حفظ حریم خصوصی', 'رمزگذاری توی مرورگر خودت انجام می‌شه.']].map((x) => `<div class="fx"><b>${x[0]}</b><br>${x[1]}</div>`).join('')}</div><h2 id="how">نامه چطور کار می‌کنه؟</h2><div class="grid">${['نامه‌ات را طراحی کن.', 'رمز و لینک اختصاصی بساز.', 'لینک را برای مخاطبت بفرست.'].map((x, i) => `<div class="fx"><b>${i + 1}</b> ${x}</div>`).join('')}</div><div class="mid"><h2>اولین نامه‌ات رو بنویس</h2><a class="btn" href="#/create">شروع کن</a></div>`);
 const about = () => { const c = C.creator; view(`<div class="panel"><h2>نامه‌باز چیست؟</h2><p>نامه‌باز جاییه برای نوشتن و فرستادن نامه‌های دیجیتال، بدون ثبت‌نام. نامه‌ات رو طراحی می‌کنی، رمز اختصاصی براش می‌ذاری و با یک لینک به دست مخاطبت می‌رسونی. نامه‌ها توی مرورگر رمزگذاری می‌شن و ۳۰ روز بعد خودکار حذف می‌شن.</p><p>رمزگذاری واقعی و سمت مرورگره، اما هیچ سیستمی امنیت مطلق نداره. نسخه ${esc(C.app.version)}</p><h2>سازنده</h2><h3>${esc(c.name)}</h3><p>${esc(c.title)}</p><p>${esc(c.bio)}</p>${links(footLinks())}</div>`); };
 const privacy = () => view(`<div class="panel"><h2>حریم خصوصی</h2><p>نامه‌های شما در مرورگر خودتان رمزگذاری می‌شوند. محتوای خوانای نامه‌ها در سرور ذخیره نمی‌شود و بدون رمز اختصاصی و کلید معتبر امکان خواندن آن‌ها وجود ندارد.</p><h3>محدودیت‌ها</h3><ul><li>رمز ضعیف قابل حدس‌زدنه؛ رمز قوی انتخاب کن.</li><li>هر کس لینک و رمز رو داشته باشه می‌تونه نامه رو بخونه.</li><li>تعداد بازدید، تاریخ ساخت و حجم داده برای سرور قابل مشاهده‌ست.</li><li>محدودیت تلاش ناموفق سمت مرورگره و جلوی مهاجم حرفه‌ای رو نمی‌گیره.</li><li>گیرنده بعد از ورود رمز می‌تونه پاسخ‌ها رو رمز کنه؛ فقط فرستنده با لینک مدیریت می‌خونه‌شون.</li></ul></div>`);
 const footLinks = () => { const l = C.creator.links; return { ig: l.instagram.split('/').pop(), tg: l.telegram, wa: l.whatsapp, web: l.website }; };
@@ -149,7 +151,7 @@ const footLinks = () => { const l = C.creator.links; return { ig: l.instagram.sp
 // ---------- Router & events ----------
 function route() {
   const [, a, b] = (location.hash.slice(1) || '/').split('/');
-  if (a == 'create') { if (!S) init(); draw(); } else if (a == 'about') about(); else if (a == 'privacy') privacy(); else if (a == 'l') recv(b); else if (a == 'm') manage(b); else home();
+  if (a == 'create') { if (!S) init(); draw(); } else if (a == 'about') about(); else if (a == 'privacy') privacy(); else if (a == 'qa') qaCreate(H); else if (a == 'l') recv(b); else if (a == 'm') manage(b); else home();
 }
 addEventListener('hashchange', route);
 const nm = { instagram: 'اینستاگرام', telegram: 'تلگرام', whatsapp: 'واتساپ', email: 'ایمیل', website: 'وب‌سایت' };
@@ -174,4 +176,5 @@ document.addEventListener('click', async (e) => {
   else if (t.id == 'mk') make(t);
 });
 document.addEventListener('change', (e) => { if (e.target.id == 'sp') document.querySelectorAll('[data-k=pw],[data-k=pw2]').forEach((i) => i.type = e.target.checked ? 'text' : 'password'); });
+const H = { rpc, kdf, seal, imp, sha, rkb, b64, ub64, rnd, esc, view, toast, pst };
 route();
