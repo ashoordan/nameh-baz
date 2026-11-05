@@ -158,7 +158,8 @@ function route() {
 addEventListener('hashchange', route);
 const nm = { instagram: 'اینستاگرام', telegram: 'تلگرام', whatsapp: 'واتساپ', email: 'ایمیل', website: 'وب‌سایت' };
 const NAV = [['create', 'ساخت نامه', '<path d="M3 6h18v12H3z"/><path d="M3 7l9 7 9-7"/>'], ['qa', 'سوال و جواب', '<path d="M4 5h16v11H9l-5 4z"/>'], ['about', 'درباره', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'], ['privacy', 'حریم خصوصی', '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>']];
-$('nav').innerHTML = NAV.map(([k, t, d]) => `<a href="#/${k}" data-nv="${k}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg><span>${t}</span></a>`).join('');
+const NH = NAV.map(([k, t, d]) => `<a href="#/${k}" data-nv="${k}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg><span>${t}</span></a>`).join('');
+$('nav').innerHTML = NH; const nb = document.createElement('nav'); nb.id = 'nb'; nb.innerHTML = NH; document.body.append(nb);
 $('#ft').innerHTML = `نامه‌باز · ${esc(C.creator.name)} ` + Object.entries(C.creator.links).filter(([, v]) => v).map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener noreferrer">${nm[k]}</a>`).join(' · ');
 document.addEventListener('input', (e) => {
   const k = e.target.dataset.k; if (!k) return;
