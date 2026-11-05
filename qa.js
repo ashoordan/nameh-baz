@@ -4,8 +4,8 @@ const FXC = { flowers: ['🌸', '🌷', '🌹', '🌼'], hearts: ['❤️', '�
 const YF = [['flowers', 'گل‌افشانی 🌸'], ['hearts', 'قلب‌ها ❤️'], ['confetti', 'کنفتی 🎉'], ['balloons', 'بادکنک 🎈'], ['cats', 'گربه‌های عاشق 😻'], ['food', 'بارش خوراکی 🍕'], ['stars', 'ستاره‌باران 🌟'], ['fire', 'آتش‌بازی 🎆'], ['random', 'تصادفی 🎲'], ['none', 'فقط پیام']];
 const NF = [['dodge', 'دکمه فرار می‌کنه 🏃'], ['swap', 'دکمه‌ها جاشون رو عوض می‌کنن 🔄'], ['shake', 'دکمه می‌لرزه 😬'], ['shrink', 'دکمه کوچیک می‌شه 🐜'], ['growyes', 'دکمه اول بزرگ‌تر می‌شه 🎈'], ['none', 'فقط پیام']];
 const IT = {
-  fun: { q: 'قبول می‌کنی باهام بیای بیرون؟ 😄', a0: 'آره!', a1: 'نه', m0: 'ایول! 🎉', m1: 'باشه، ولی پشیمون می‌شی 😏', f0: 'flowers', f1: 'dodge', dg: 4, dm: 'مطمئنی؟ 🤨\nدوباره فکر کن 😏\nدستم لغزید! 🙈\nاین دکمه خجالتیه 😳' },
-  serious: { q: '', a0: 'بله', a1: 'خیر', m0: 'ممنون که پذیرفتی.', m1: 'ممنون که صادق بودی؛ احترام می‌گذارم.', f0: 'none', f1: 'none', dg: 4, dm: '' }
+  fun: { q: 'قبول می‌کنی باهام بیای بیرون؟ 😄', a0: 'آره!', a1: 'نه', m0: 'ایول! 🎉', m1: 'باشه، ولی پشیمون می‌شی 😏', f0: 'flowers', f1: 'dodge', dg: 4, nx: 'end', dm: 'مطمئنی؟ 🤨\nدوباره فکر کن 😏\nدستم لغزید! 🙈\nاین دکمه خجالتیه 😳' },
+  serious: { q: '', a0: 'بله', a1: 'خیر', m0: 'ممنون که پذیرفتی.', m1: 'ممنون که صادق بودی؛ احترام می‌گذارم.', f0: 'none', f1: 'none', dg: 4, nx: 'end', dm: '' }
 };
 const burst = (b, ch) => {
   const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
@@ -30,26 +30,29 @@ export function showQA(el, p, o, H) {
       el.querySelector('.rx').textContent = [ym, nm][i] || '';
       let k = fx[0]; if (k == 'random') k = Object.keys(FXC)[Math.floor(Math.random() * 8)];
       if (i == 0 && FXC[k] && !rm) { b.classList.add('pop'); burst(b, FXC[k]); }
-      if (!last) nx.innerHTML = '<button class="btn" id="qx">سوال بعدی</button>';
-      else nx.innerHTML = `<p><b>${esc(p.end || 'ممنون که جواب دادی 🤍')}</b></p>${o.preview ? '<button class="btn ghost" id="qrt">تست دوباره</button>' : ''}`;
+      const early = i == 1 && it.nx == 'end', DF = 'ممنون که جواب دادی 🤍';
+      if (!last && !early) nx.innerHTML = '<button class="btn" id="qx">سوال بعدی</button>';
+      else nx.innerHTML = `<p><b>${esc((early ? p.endNo || p.end : p.end) || DF)}</b></p>${o.preview ? '<button class="btn ghost" id="qrt">تست دوباره</button>' : ''}`;
       if ($('#qx')) $('#qx').onclick = () => { idx++; step(); };
       if ($('#qrt')) $('#qrt').onclick = () => { idx = 0; step(); };
       if (o.preview) return;
       try { const s = await H.seal(await H.imp(H.ub64(p.rk)), { t: `${items.length > 1 ? idx + 1 + '. ' : ''}${it.q}: ${[ya, na][i]}`.slice(0, 220), at: Date.now() }); await H.rpc('submit_response', { p_id: o.id, p_iv: s.iv, p_ct: s.ct }); } catch { H.toast('ثبت پاسخ ناموفق بود'); }
     };
-    const kind = fx[1], block = ['dodge', 'swap', 'shake'].includes(kind), active = block || kind == 'shrink' || kind == 'growyes';
+    const kind = fx[1], mv = ['dodge', 'swap', 'shake', 'shrink', 'growyes'].includes(kind), block = true, limit = mv ? max : Math.min(max, dm.length);
     const att = () => {
-      if (rm || n >= max || !active) return false; n++;
-      if (kind == 'dodge') nb.style.transform = `translate(${rn(-90, 90)}px,${rn(-50, 50)}px)`;
-      else if (kind == 'shrink') nb.style.transform = `scale(${1 - n * 0.1})`;
-      else if (kind == 'growyes') yb.style.transform = `scale(${1 + n * 0.12})`;
-      else if (kind == 'swap') qb.classList.toggle('rv');
-      else nb.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-12px)' }, { transform: 'translateX(12px)' }, { transform: 'translateX(0)' }], { duration: 350 });
-      if (dm.length) { const d = el.querySelector('.dm'); d.textContent = dm[Math.min(n - 1, dm.length - 1)]; d.classList.remove('pop'); void d.offsetWidth; d.classList.add('pop'); }
+      if (n >= limit) return false; n++;
+      if (!rm) {
+        if (kind == 'dodge') nb.style.transform = `translate(${rn(-90, 90)}px,${rn(-50, 50)}px)`;
+        else if (kind == 'shrink') nb.style.transform = `scale(${1 - n * 0.1})`;
+        else if (kind == 'growyes') yb.style.transform = `scale(${1 + n * 0.12})`;
+        else if (kind == 'swap') { qb.style.flexDirection = qb.style.flexDirection == 'row-reverse' ? 'row' : 'row-reverse'; [yb, nb].forEach((x) => x.animate([{ opacity: .2 }, { opacity: 1 }], { duration: 350 })); }
+        else if (kind == 'shake') nb.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-12px)' }, { transform: 'translateX(12px)' }, { transform: 'translateX(0)' }], { duration: 350 });
+      }
+      if (dm.length) { const d = el.querySelector('.dm'); d.textContent = dm[Math.min(n - 1, dm.length - 1)]; d.style.cssText = 'color:#c0392b;font-weight:700;min-height:1.8em'; d.classList.remove('pop'); void d.offsetWidth; d.classList.add('pop'); }
       return block;
     };
     yb.onclick = () => ans(0, yb);
-    nb.addEventListener('pointerenter', (e) => { if (e.pointerType == 'mouse') att(); });
+    nb.addEventListener('pointerenter', (e) => { if (e.pointerType == 'mouse' && mv) att(); });
     nb.onclick = () => { if (!att()) ans(1, nb); };
   };
   step();
@@ -57,27 +60,27 @@ export function showQA(el, p, o, H) {
 
 export function qaCreate(H) {
   const { esc, view, toast } = H;
-  let Q = { mode: 'fun', name: '', end: '', ig: '', tg: '', wa: '', ph: '', web: '', pw: '', pw2: '', items: [{ ...IT.fun }] };
+  let Q = { mode: 'fun', name: '', end: 'ممنون که جواب دادی 🤍', endNo: 'ممنون که جواب دادی 🤍', ig: '', tg: '', wa: '', ph: '', web: '', pw: '', pw2: '', items: [{ ...IT.fun }] };
   const tin = (i, k, l, t) => `<label>${l}<input data-i="${i}" data-q="${k}" type="${t || 'text'}" value="${esc(Q.items[i][k])}"></label>`;
   const tsel = (i, k, l, o) => `<label>${l}<select data-i="${i}" data-q="${k}">${o.map((x) => `<option value="${x[0]}" ${Q.items[i][k] == x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
   const gin = (k, l, t) => `<label>${l}<input data-q="${k}" type="${t || 'text'}" value="${esc(Q[k])}"></label>`;
   const itemH = (it, i) => `<div class="fx" style="border:1px solid #38271f33;margin:12px 0"><b>سوال ${i + 1}</b> ${Q.items.length > 1 ? `<button class="btn ghost" data-del="${i}">حذف</button>` : ''}
-<label>سوال<textarea data-i="${i}" data-q="q" style="min-height:60px">${esc(it.q)}</textarea></label>
+<label>سوال<textarea data-i="${i}" data-q="q" style="min-height:60px">${esc(it.q)}</textarea></label>${Q.items.length > 1 ? tsel(i, 'nx', 'اگه گزینه دوم رو زد', [['end', 'سوال‌ها تموم بشه'], ['cont', 'بره سوال بعدی']]) + '<small>اگه گزینه اول رو بزنه همیشه سوال بعدی ساخته می‌شه.</small>' : ''}
 <div class="row">${tin(i, 'a0', 'گزینه اول')}${tin(i, 'a1', 'گزینه دوم')}</div><div class="row">${tin(i, 'm0', 'پیام بعد از گزینه اول')}${tin(i, 'm1', 'پیام بعد از گزینه دوم')}</div>
-${Q.mode == 'fun' ? `<div class="row">${tsel(i, 'f0', 'افکت گزینه اول', YF)}${tsel(i, 'f1', 'افکت گزینه دوم', NF)}${tin(i, 'dg', 'تعداد دفعات (۱ تا ۸)', 'number')}</div><label>پیام برای هر بار که روی گزینه دوم کلیک می‌کنه (هر خط یک بار)<textarea data-i="${i}" data-q="dm" style="min-height:80px">${esc(it.dm)}</textarea></label><small>گیرنده بعد از همین تعداد تلاش، همیشه می‌تونه گزینه دوم رو بزنه.</small>` : ''}</div>`;
-  const pay = () => ({ kind: 'qa', mode: Q.mode, title: (Q.items[0].q || '').trim().slice(0, 40), paper: Q.mode == 'fun' ? 'fantasy' : 'formal', name: Q.name.trim(), tone: Q.mode == 'fun' ? 0 : 1, end: Q.end.trim(), ct: { ig: Q.ig, tg: Q.tg, wa: Q.wa, ph: Q.ph, web: Q.web }, items: Q.items.map((it) => ({ q: it.q.trim(), a: [it.a0, it.a1], m: [it.m0, it.m1], fx: [it.f0, it.f1], dg: +it.dg, dm: (it.dm || '').split('\n').map((s) => s.trim()).filter(Boolean) })) });
+${Q.mode == 'fun' ? `<div class="row">${tsel(i, 'f0', 'افکت گزینه اول', YF)}${tsel(i, 'f1', 'افکت گزینه دوم', NF)}${tin(i, 'dg', 'حداکثر دفعات فرار (۱ تا ۸)', 'number')}</div>` : ''}<label>پیام برای هر بار کلیک روی گزینه دوم (هر خط یک بار؛ خالی = همون بار اول جواب ثبت بشه)<textarea data-i="${i}" data-q="dm" style="min-height:80px">${esc(it.dm)}</textarea></label><small>گیرنده بعد از این تعداد تلاش، همیشه می‌تونه گزینه دوم رو بزنه.</small></div>`;
+  const pay = () => ({ kind: 'qa', mode: Q.mode, title: (Q.items[0].q || '').trim().slice(0, 40), paper: Q.mode == 'fun' ? 'fantasy' : 'formal', name: Q.name.trim(), tone: Q.mode == 'fun' ? 0 : 1, end: Q.end.trim(), endNo: Q.endNo.trim(), ct: { ig: Q.ig, tg: Q.tg, wa: Q.wa, ph: Q.ph, web: Q.web }, items: Q.items.map((it) => ({ q: it.q.trim(), a: [it.a0, it.a1], m: [it.m0, it.m1], fx: [it.f0, it.f1], dg: +it.dg, nx: it.nx, dm: (it.dm || '').split('\n').map((s) => s.trim()).filter(Boolean) })) });
   const pv = () => showQA($('#qpv'), pay(), { preview: true }, H);
   const rd = () => {
     const y = scrollY;
     view(`<div class="panel"><h2>سوال و جواب دو گزینه‌ای</h2><div class="grid"><button class="card ${Q.mode == 'fun' ? 'on' : ''}" data-md="fun"><i>😄</i>شوخ‌طبعانه</button><button class="card ${Q.mode == 'serious' ? 'on' : ''}" data-md="serious"><i>📜</i>جدی</button></div>
 ${Q.items.map(itemH).join('')}${Q.items.length < 10 ? '<button class="btn ghost" data-add="1">+ سوال جدید</button>' : ''}
-${gin('end', 'پیام پایان (بعد از آخرین سوال)')}${gin('name', 'نام یا نام مستعار (اختیاری)')}
+${gin('end', 'پیام پایان وقتی همه سوال‌ها تموم شد')}${Q.items.length > 1 ? gin('endNo', 'پیام پایان وقتی با گزینه دوم تموم شد') : ''}${gin('name', 'نام یا نام مستعار (اختیاری)')}
 <h3>راه ارتباطی (اختیاری، زیر سوال‌ها نشون داده می‌شه)</h3><div class="row">${gin('ig', 'اینستاگرام')}${gin('tg', 'تلگرام')}${gin('wa', 'واتساپ')}${gin('ph', 'شماره تماس')}${gin('web', 'وب‌سایت (https://...)')}</div>
 <div class="row">${gin('pw', 'رمز (حداقل ۸ نویسه)', 'password')}${gin('pw2', 'تکرار رمز', 'password')}</div>
 <h3>پیش‌نمایش (تستش کن)</h3><div id="qpv"></div><button class="btn" id="qmk">ساخت و دریافت لینک</button></div>`);
     scrollTo(0, y);
     $('#app').oninput = (e) => { const k = e.target.dataset.q; if (!k) return; const i = e.target.dataset.i; (i === undefined ? Q : Q.items[i])[k] = e.target.value; if (k != 'pw' && k != 'pw2') pv(); };
-    document.querySelectorAll('[data-md]').forEach((b) => b.onclick = () => { const m = b.dataset.md; Q.mode = m; Q.items = Q.items.map((it) => ({ ...it, f0: IT[m].f0, f1: IT[m].f1, dm: m == 'fun' ? (it.dm || IT.fun.dm) : '' })); rd(); });
+    document.querySelectorAll('[data-md]').forEach((b) => b.onclick = () => { const m = b.dataset.md; Q.mode = m; Q.items = Q.items.map((it) => ({ ...it, f0: IT[m].f0, f1: IT[m].f1, dm: m == 'fun' ? (it.dm || IT.fun.dm) : (it.dm == IT.fun.dm ? '' : it.dm) })); rd(); });
     document.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => { Q.items.push({ ...IT[Q.mode], q: '' }); rd(); });
     document.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { Q.items.splice(+b.dataset.del, 1); rd(); });
     $('#qmk').onclick = (e) => mk(e.target); pv();
