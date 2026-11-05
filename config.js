@@ -1,7 +1,7 @@
 // تنظیمات مرکزی. کلید anon (JWT قدیمی) از Supabase > Project Settings > API. هرگز service_role اینجا نگذار.
 export const CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-KEY",
+  SUPABASE_URL: "https://glsdfyleuljmugrwiuip.supabase.co",
+SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsc2RmeWxldWxqbXVncndpdWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4NTg0MTEsImV4cCI6MjEwOTQzNDQxMX0.MnbB-kKOfunSZwDkpQ9Ab97X0htnuRpdzByqFB-Og60",
   PBKDF2_ITER: 310000, // بعد از ساخت اولین نامه تغییرش نده
   creator: {
     name: "ابراهیم آشوردن",
