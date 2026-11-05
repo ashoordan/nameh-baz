@@ -3,6 +3,9 @@ const $ = (s) => document.querySelector(s), rn = (a, b) => a + Math.random() * (
 const FXC = { flowers: ['🌸', '🌷', '🌹', '🌼'], hearts: ['❤️', '💖', '💕'], confetti: ['🎉', '✨', '🎊', '⭐'], balloons: ['🎈', '🎈', '🎀', '🎉'], cats: ['😻', '🐱', '😸', '💘'], food: ['🍕', '🍫', '🍰', '🍩', '🍪'], stars: ['⭐', '🌟', '✨', '💫'], fire: ['🎆', '🎇', '✨', '🔥'] };
 const YF = [['flowers', 'گل‌افشانی 🌸'], ['hearts', 'قلب‌ها ❤️'], ['confetti', 'کنفتی 🎉'], ['balloons', 'بادکنک 🎈'], ['cats', 'گربه‌های عاشق 😻'], ['food', 'بارش خوراکی 🍕'], ['stars', 'ستاره‌باران 🌟'], ['fire', 'آتش‌بازی 🎆'], ['random', 'تصادفی 🎲'], ['none', 'فقط پیام']];
 const NF = [['dodge', 'دکمه فرار می‌کنه 🏃'], ['swap', 'دکمه‌ها جاشون رو عوض می‌کنن 🔄'], ['shake', 'دکمه می‌لرزه 😬'], ['shrink', 'دکمه کوچیک می‌شه 🐜'], ['growyes', 'دکمه اول بزرگ‌تر می‌شه 🎈'], ['none', 'فقط پیام']];
+const TEX = { weave: 'background-image:repeating-linear-gradient(45deg,#0000000a 0 2px,#0000 2px 5px)', lines: 'background-image:repeating-linear-gradient(#0000 0 27px,#0000001f 27px 28px)', dots: 'background-image:radial-gradient(#00000022 1.2px,#0000 1.6px);background-size:14px 14px', grid: 'background-image:linear-gradient(#0000000f 1px,#0000 1px),linear-gradient(90deg,#0000000f 1px,#0000 1px);background-size:20px 20px' };
+const TXO = [['none', 'ساده'], ['weave', 'بافت کاغذ'], ['lines', 'خط‌دار'], ['dots', 'نقطه‌ای'], ['grid', 'شطرنجی']];
+const PPO = [['fantasy', 'فانتزی'], ['cream', 'کرم کلاسیک'], ['white', 'سفید مینیمال'], ['pink', 'صورتی عاشقانه'], ['dark', 'تیره'], ['formal', 'رسمی'], ['texture', 'بافت‌دار']];
 const IT = {
   fun: { q: 'قبول می‌کنی باهام بیای بیرون؟ 😄', a0: 'آره!', a1: 'نه', m0: 'ایول! 🎉', m1: 'باشه، ولی پشیمون می‌شی 😏', f0: 'flowers', f1: 'dodge', dg: 4, nx: 'end', dm: 'مطمئنی؟ 🤨\nدوباره فکر کن 😏\nدستم لغزید! 🙈\nاین دکمه خجالتیه 😳' },
   serious: { q: '', a0: 'بله', a1: 'خیر', m0: 'ممنون که پذیرفتی.', m1: 'ممنون که صادق بودی؛ احترام می‌گذارم.', f0: 'none', f1: 'none', dg: 4, nx: 'end', dm: '' }
@@ -20,10 +23,13 @@ const burst = (b, ch) => {
 export function showQA(el, p, o, H) {
   const { esc } = H, rm = matchMedia('(prefers-reduced-motion:reduce)').matches, ct = H.links(p.ct);
   const items = p.items || [{ q: p.q, a: p.a, m: p.m, fx: p.fx, dg: p.dg, dm: [] }]; let idx = 0;
+  let sty = H.pst({ paper: p.paper, size: 20, align: 'center' });
+  if (/^#[0-9a-f]{6}$/i.test(p.bg)) { const h = p.bg, l = (parseInt(h.slice(1, 3), 16) * 299 + parseInt(h.slice(3, 5), 16) * 587 + parseInt(h.slice(5, 7), 16) * 114) / 1000; sty += `;background:${h};color:${l > 140 ? '#2a1c14' : '#fff4e3'}`; }
+  if (TEX[p.tex]) sty += ';' + TEX[p.tex];
   const step = () => {
     const it = items[idx] || {}, [ya, na] = it.a || ['', ''], [ym, nm] = it.m || ['', ''], fx = it.fx || [], dm = Array.isArray(it.dm) ? it.dm : [];
     const max = Math.min(8, Math.max(1, +it.dg || 4)), last = idx >= items.length - 1; let n = 0, done = 0;
-    el.innerHTML = `<div class="paper qa" style="${H.pst({ paper: p.paper, size: 20, align: 'center' })}">${items.length > 1 ? `<small>سوال ${idx + 1} از ${items.length}</small>` : ''}<h2>${esc(it.q)}</h2><div class="qb"><button class="btn" id="qy">${esc(ya)}</button><button class="btn ghost" id="qn">${esc(na)}</button></div><p class="dm"></p><p class="rx"></p><div class="nx"></div><small>${p.name ? 'از طرف ' + esc(p.name) : 'فرستنده ناشناس'}</small>${ct}</div>`;
+    el.innerHTML = `<div class="paper qa" style="${sty}">${items.length > 1 ? `<small>سوال ${idx + 1} از ${items.length}</small>` : ''}<h2>${esc(it.q)}</h2><div class="qb"><button class="btn" id="qy">${esc(ya)}</button><button class="btn ghost" id="qn">${esc(na)}</button></div><p class="dm"></p><p class="rx"></p><div class="nx"></div><small>${p.name ? 'از طرف ' + esc(p.name) : 'فرستنده ناشناس'}</small>${ct}</div>`;
     const yb = $('#qy'), nb = $('#qn'), qb = el.querySelector('.qb'), nx = el.querySelector('.nx');
     const ans = async (i, b) => {
       if (done) return; done = 1; el.querySelectorAll('.qb .btn').forEach((x) => x.disabled = true);
@@ -43,8 +49,8 @@ export function showQA(el, p, o, H) {
       if (n >= limit) return false; n++;
       if (!rm) {
         if (kind == 'dodge') nb.style.transform = `translate(${rn(-90, 90)}px,${rn(-50, 50)}px)`;
-        else if (kind == 'shrink') nb.style.transform = `scale(${1 - n * 0.1})`;
-        else if (kind == 'growyes') yb.style.transform = `scale(${1 + n * 0.12})`;
+        else if (kind == 'shrink') nb.style.transform = `scale(${1 - 0.7 * n / max})`;
+        else if (kind == 'growyes') yb.style.transform = `scale(${1 + 1.1 * n / max})`;
         else if (kind == 'swap') { qb.style.flexDirection = qb.style.flexDirection == 'row-reverse' ? 'row' : 'row-reverse'; [yb, nb].forEach((x) => x.animate([{ opacity: .2 }, { opacity: 1 }], { duration: 350 })); }
         else if (kind == 'shake') nb.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-12px)' }, { transform: 'translateX(12px)' }, { transform: 'translateX(0)' }], { duration: 350 });
       }
@@ -60,7 +66,7 @@ export function showQA(el, p, o, H) {
 
 export function qaCreate(H) {
   const { esc, view, toast } = H;
-  let Q = { mode: 'fun', name: '', end: 'ممنون که جواب دادی 🤍', endNo: 'ممنون که جواب دادی 🤍', ig: '', tg: '', wa: '', ph: '', web: '', pw: '', pw2: '', items: [{ ...IT.fun }] };
+  let Q = { mode: 'fun', paper: 'fantasy', bg: '', tex: 'none', name: '', end: 'ممنون که جواب دادی 🤍', endNo: 'ممنون که جواب دادی 🤍', ig: '', tg: '', wa: '', ph: '', web: '', pw: '', pw2: '', items: [{ ...IT.fun }] };
   const tin = (i, k, l, t) => `<label>${l}<input data-i="${i}" data-q="${k}" type="${t || 'text'}" value="${esc(Q.items[i][k])}"></label>`;
   const tsel = (i, k, l, o) => `<label>${l}<select data-i="${i}" data-q="${k}">${o.map((x) => `<option value="${x[0]}" ${Q.items[i][k] == x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label>`;
   const gin = (k, l, t) => `<label>${l}<input data-q="${k}" type="${t || 'text'}" value="${esc(Q[k])}"></label>`;
@@ -68,20 +74,22 @@ export function qaCreate(H) {
 <label>سوال<textarea data-i="${i}" data-q="q" style="min-height:60px">${esc(it.q)}</textarea></label>${Q.items.length > 1 ? tsel(i, 'nx', 'اگه گزینه دوم رو زد', [['end', 'سوال‌ها تموم بشه'], ['cont', 'بره سوال بعدی']]) + '<small>اگه گزینه اول رو بزنه همیشه سوال بعدی ساخته می‌شه.</small>' : ''}
 <div class="row">${tin(i, 'a0', 'گزینه اول')}${tin(i, 'a1', 'گزینه دوم')}</div><div class="row">${tin(i, 'm0', 'پیام بعد از گزینه اول')}${tin(i, 'm1', 'پیام بعد از گزینه دوم')}</div>
 ${Q.mode == 'fun' ? `<div class="row">${tsel(i, 'f0', 'افکت گزینه اول', YF)}${tsel(i, 'f1', 'افکت گزینه دوم', NF)}${tin(i, 'dg', 'حداکثر دفعات فرار (۱ تا ۸)', 'number')}</div>` : ''}<label>پیام برای هر بار کلیک روی گزینه دوم (هر خط یک بار؛ خالی = همون بار اول جواب ثبت بشه)<textarea data-i="${i}" data-q="dm" style="min-height:80px">${esc(it.dm)}</textarea></label><small>گیرنده بعد از این تعداد تلاش، همیشه می‌تونه گزینه دوم رو بزنه.</small></div>`;
-  const pay = () => ({ kind: 'qa', mode: Q.mode, title: (Q.items[0].q || '').trim().slice(0, 40), paper: Q.mode == 'fun' ? 'fantasy' : 'formal', name: Q.name.trim(), tone: Q.mode == 'fun' ? 0 : 1, end: Q.end.trim(), endNo: Q.endNo.trim(), ct: { ig: Q.ig, tg: Q.tg, wa: Q.wa, ph: Q.ph, web: Q.web }, items: Q.items.map((it) => ({ q: it.q.trim(), a: [it.a0, it.a1], m: [it.m0, it.m1], fx: [it.f0, it.f1], dg: +it.dg, nx: it.nx, dm: (it.dm || '').split('\n').map((s) => s.trim()).filter(Boolean) })) });
+  const pay = () => ({ kind: 'qa', mode: Q.mode, title: (Q.items[0].q || '').trim().slice(0, 40), paper: Q.paper, bg: Q.bg, tex: Q.tex, name: Q.name.trim(), tone: Q.mode == 'fun' ? 0 : 1, end: Q.end.trim(), endNo: Q.endNo.trim(), ct: { ig: Q.ig, tg: Q.tg, wa: Q.wa, ph: Q.ph, web: Q.web }, items: Q.items.map((it) => ({ q: it.q.trim(), a: [it.a0, it.a1], m: [it.m0, it.m1], fx: [it.f0, it.f1], dg: +it.dg, nx: it.nx, dm: (it.dm || '').split('\n').map((s) => s.trim()).filter(Boolean) })) });
   const pv = () => showQA($('#qpv'), pay(), { preview: true }, H);
   const rd = () => {
     const y = scrollY;
     view(`<div class="panel"><h2>سوال و جواب دو گزینه‌ای</h2><div class="grid"><button class="card ${Q.mode == 'fun' ? 'on' : ''}" data-md="fun"><i>😄</i>شوخ‌طبعانه</button><button class="card ${Q.mode == 'serious' ? 'on' : ''}" data-md="serious"><i>📜</i>جدی</button></div>
 ${Q.items.map(itemH).join('')}${Q.items.length < 10 ? '<button class="btn ghost" data-add="1">+ سوال جدید</button>' : ''}
 ${gin('end', 'پیام پایان وقتی همه سوال‌ها تموم شد')}${Q.items.length > 1 ? gin('endNo', 'پیام پایان وقتی با گزینه دوم تموم شد') : ''}${gin('name', 'نام یا نام مستعار (اختیاری)')}
+<h3>ظاهر کاغذ</h3><div class="row"><label>کاغذ<select data-q="paper">${PPO.map((x) => `<option value="${x[0]}" ${Q.paper == x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label><label>بافت<select data-q="tex">${TXO.map((x) => `<option value="${x[0]}" ${Q.tex == x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label><label>رنگ پس‌زمینه دلخواه<input type="color" data-q="bg" value="${Q.bg || '#FFF4E3'}"></label></div><button class="btn ghost" data-rbg="1">برگردوندن رنگ پیش‌فرض کاغذ</button> <small>رنگ دلخواه جای رنگ کاغذ رو می‌گیره.</small>
 <h3>راه ارتباطی (اختیاری، زیر سوال‌ها نشون داده می‌شه)</h3><div class="row">${gin('ig', 'اینستاگرام')}${gin('tg', 'تلگرام')}${gin('wa', 'واتساپ')}${gin('ph', 'شماره تماس')}${gin('web', 'وب‌سایت (https://...)')}</div>
 <div class="row">${gin('pw', 'رمز (حداقل ۸ نویسه)', 'password')}${gin('pw2', 'تکرار رمز', 'password')}</div>
 <h3>پیش‌نمایش (تستش کن)</h3><div id="qpv"></div><button class="btn" id="qmk">ساخت و دریافت لینک</button></div>`);
     scrollTo(0, y);
     $('#app').oninput = (e) => { const k = e.target.dataset.q; if (!k) return; const i = e.target.dataset.i; (i === undefined ? Q : Q.items[i])[k] = e.target.value; if (k != 'pw' && k != 'pw2') pv(); };
-    document.querySelectorAll('[data-md]').forEach((b) => b.onclick = () => { const m = b.dataset.md; Q.mode = m; Q.items = Q.items.map((it) => ({ ...it, f0: IT[m].f0, f1: IT[m].f1, dm: m == 'fun' ? (it.dm || IT.fun.dm) : (it.dm == IT.fun.dm ? '' : it.dm) })); rd(); });
+    document.querySelectorAll('[data-md]').forEach((b) => b.onclick = () => { const m = b.dataset.md; Q.mode = m; if (Q.paper == (m == 'fun' ? 'formal' : 'fantasy')) Q.paper = m == 'fun' ? 'fantasy' : 'formal'; Q.items = Q.items.map((it) => ({ ...it, f0: IT[m].f0, f1: IT[m].f1, dm: m == 'fun' ? (it.dm || IT.fun.dm) : (it.dm == IT.fun.dm ? '' : it.dm) })); rd(); });
     document.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => { Q.items.push({ ...IT[Q.mode], q: '' }); rd(); });
+    document.querySelectorAll('[data-rbg]').forEach((b) => b.onclick = () => { Q.bg = ''; rd(); });
     document.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { Q.items.splice(+b.dataset.del, 1); rd(); });
     $('#qmk').onclick = (e) => mk(e.target); pv();
   };
