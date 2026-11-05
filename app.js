@@ -176,5 +176,5 @@ document.addEventListener('click', async (e) => {
   else if (t.id == 'mk') make(t);
 });
 document.addEventListener('change', (e) => { if (e.target.id == 'sp') document.querySelectorAll('[data-k=pw],[data-k=pw2]').forEach((i) => i.type = e.target.checked ? 'text' : 'password'); });
-const H = { rpc, kdf, seal, imp, sha, rkb, b64, ub64, rnd, esc, view, toast, pst };
+const H = { rpc, kdf, seal, imp, sha, rkb, b64, ub64, rnd, esc, view, toast, pst, links };
 route();
