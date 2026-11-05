@@ -1,7 +1,7 @@
 // تب «سوال و جواب» — چند سوال دو گزینه‌ای، افکت‌های شوخ‌طبعانه، راه ارتباطی اختیاری
 const $ = (s) => document.querySelector(s), rn = (a, b) => a + Math.random() * (b - a);
-const FXC = { flowers: ['🌸', '🌷', '🌹', '🌼'], hearts: ['❤️', '💖', '💕'], confetti: ['🎉', '✨', '🎊', '⭐'], balloons: ['🎈', '🎈', '🎀', '🎉'], cats: ['😻', '🐱', '😸', '💘'], food: ['🍕', '🍫', '🍰', '🍩', '🍪'], stars: ['⭐', '🌟', '✨', '💫'], fire: ['🎆', '🎇', '✨', '🔥'] };
-const YF = [['flowers', 'گل‌افشانی 🌸'], ['hearts', 'قلب‌ها ❤️'], ['confetti', 'کنفتی 🎉'], ['balloons', 'بادکنک 🎈'], ['cats', 'گربه‌های عاشق 😻'], ['food', 'بارش خوراکی 🍕'], ['stars', 'ستاره‌باران 🌟'], ['fire', 'آتش‌بازی 🎆'], ['random', 'تصادفی 🎲'], ['none', 'فقط پیام']];
+const FXC = { flowers: ['🌸', '🌷', '🌹', '🌼'], hearts: ['❤️', '💖', '💕'], balloons: ['🎈', '🎈', '🎀', '🎉'], cats: ['😻', '🐱', '😸', '💘'], food: ['🍕', '🍫', '🍰', '🍩', '🍪'], stars: ['⭐', '🌟', '✨', '💫'], fire: ['🎆', '🎇', '✨', '🔥'] };
+const YF = [['flowers', 'گل‌افشانی 🌸'], ['hearts', 'قلب‌ها ❤️'], ['particles', 'ذرات درخشان ✨'], ['balloons', 'بادکنک 🎈'], ['cats', 'گربه‌های عاشق 😻'], ['food', 'بارش خوراکی 🍕'], ['stars', 'ستاره‌باران 🌟'], ['fire', 'آتش‌بازی 🎆'], ['random', 'تصادفی 🎲'], ['none', 'فقط پیام']];
 const NF = [['dodge', 'دکمه فرار می‌کنه 🏃'], ['swap', 'دکمه‌ها جاشون رو عوض می‌کنن 🔄'], ['shake', 'دکمه می‌لرزه 😬'], ['shrink', 'دکمه کوچیک می‌شه 🐜'], ['growyes', 'دکمه اول بزرگ‌تر می‌شه 🎈'], ['none', 'فقط پیام']];
 const TEX = { weave: 'background-image:repeating-linear-gradient(45deg,#0000000a 0 2px,#0000 2px 5px)', lines: 'background-image:repeating-linear-gradient(#0000 0 27px,#0000001f 27px 28px)', dots: 'background-image:radial-gradient(#00000022 1.2px,#0000 1.6px);background-size:14px 14px', grid: 'background-image:linear-gradient(#0000000f 1px,#0000 1px),linear-gradient(90deg,#0000000f 1px,#0000 1px);background-size:20px 20px' };
 const TXO = [['none', 'ساده'], ['weave', 'بافت کاغذ'], ['lines', 'خط‌دار'], ['dots', 'نقطه‌ای'], ['grid', 'شطرنجی']];
@@ -9,6 +9,18 @@ const PPO = [['fantasy', 'فانتزی'], ['cream', 'کرم کلاسیک'], ['wh
 const IT = {
   fun: { q: 'قبول می‌کنی باهام بیای بیرون؟ 😄', a0: 'آره!', a1: 'نه', m0: 'ایول! 🎉', m1: 'باشه، ولی پشیمون می‌شی 😏', f0: 'flowers', f1: 'dodge', dg: 4, nx: 'end', dm: 'مطمئنی؟ 🤨\nدوباره فکر کن 😏\nدستم لغزید! 🙈\nاین دکمه خجالتیه 😳' },
   serious: { q: '', a0: 'بله', a1: 'خیر', m0: 'ممنون که پذیرفتی.', m1: 'ممنون که صادق بودی؛ احترام می‌گذارم.', f0: 'none', f1: 'none', dg: 4, nx: 'end', dm: '' }
+};
+const PAL = ['#E88B32', '#D89011', '#FFF4E3', '#ffd27a', '#803C42'];
+const burstCss = (b) => {
+  const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, ring = document.createElement('i');
+  ring.style.cssText = `position:fixed;left:${x - 20}px;top:${y - 20}px;width:40px;height:40px;border:2px solid #E88B32;border-radius:50%;pointer-events:none;z-index:99`;
+  document.body.append(ring); ring.animate([{ transform: 'scale(.3)', opacity: .9 }, { transform: 'scale(5)', opacity: 0 }], { duration: 700, easing: 'ease-out' }).onfinish = () => ring.remove();
+  for (let i = 0; i < 46; i++) {
+    const s = document.createElement('i'), c = PAL[i % PAL.length], w = rn(5, 11), t = i % 3, a = rn(0, 6.28), d = rn(70, 230), rot = rn(-540, 540);
+    s.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${t == 1 ? w * 0.5 : w}px;height:${t == 1 ? w * 1.8 : w}px;background:${c};border-radius:${t == 0 ? '50%' : '2px'};box-shadow:0 0 10px ${c};pointer-events:none;z-index:99`;
+    document.body.append(s);
+    s.animate([{ transform: 'translate(0,0) rotate(0) scale(.4)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d - 40}px) rotate(${rot / 2}deg) scale(1)`, opacity: 1, offset: .45 }, { transform: `translate(${Math.cos(a) * d * 1.15}px,${Math.sin(a) * d + 140}px) rotate(${rot}deg) scale(.5)`, opacity: 0 }], { duration: rn(1400, 2200), easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => s.remove();
+  }
 };
 const burst = (b, ch) => {
   const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
@@ -34,8 +46,9 @@ export function showQA(el, p, o, H) {
     const ans = async (i, b) => {
       if (done) return; done = 1; el.querySelectorAll('.qb .btn').forEach((x) => x.disabled = true);
       el.querySelector('.rx').textContent = [ym, nm][i] || '';
-      let k = fx[0]; if (k == 'random') k = Object.keys(FXC)[Math.floor(Math.random() * 8)];
-      if (i == 0 && FXC[k] && !rm) { b.classList.add('pop'); burst(b, FXC[k]); }
+      let k = fx[0]; if (k == 'random') { const ks = [...Object.keys(FXC), 'particles']; k = ks[Math.floor(Math.random() * ks.length)]; }
+      if (k == 'confetti') k = 'particles';
+      if (i == 0 && !rm && (k == 'particles' || FXC[k])) { b.classList.add('pop'); k == 'particles' ? burstCss(b) : burst(b, FXC[k]); }
       const early = i == 1 && it.nx == 'end', DF = 'ممنون که جواب دادی 🤍';
       if (!last && !early) nx.innerHTML = '<button class="btn" id="qx">سوال بعدی</button>';
       else nx.innerHTML = `<p><b>${esc((early ? p.endNo || p.end : p.end) || DF)}</b></p>${o.preview ? '<button class="btn ghost" id="qrt">تست دوباره</button>' : ''}`;
