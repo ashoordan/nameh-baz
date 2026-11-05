@@ -45,9 +45,13 @@ const links = (c) => {
   try { const x = new URL(c.web); if (/^https?:$/.test(x.protocol)) o.push(h(esc(x.href), 'وب‌سایت')); } catch {}
   return o.length ? `<div class="ct">${o.join(' · ')}</div>` : '';
 };
+const TEX = { weave: 'background-image:repeating-linear-gradient(45deg,#0000000a 0 2px,#0000 2px 5px)', lines: 'background-image:repeating-linear-gradient(#0000 0 27px,#0000001f 27px 28px)', dots: 'background-image:radial-gradient(#00000022 1.2px,#0000 1.6px);background-size:14px 14px', grid: 'background-image:linear-gradient(#0000000f 1px,#0000 1px),linear-gradient(90deg,#0000000f 1px,#0000 1px);background-size:20px 20px' };
+const TXO = [['none', 'ساده'], ['weave', 'بافت کاغذ'], ['lines', 'خط‌دار'], ['dots', 'نقطه‌ای'], ['grid', 'شطرنجی']];
 const pst = (p) => {
-  const pp = P[p.paper] || P.cream, col = /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : pp[2], sz = Math.min(40, Math.max(12, +p.size || 18));
-  return `background:${pp[1]};color:${col};font-family:${FONTS.includes(p.font) ? p.font : 'Vazirmatn'},Vazirmatn,sans-serif;font-size:${sz}px;text-align:${ALIGN.includes(p.align) ? p.align : 'right'}`;
+  const pp = P[p.paper] || P.cream, hx = /^#[0-9a-f]{6}$/i, bg = hx.test(p.bg) ? p.bg : pp[1];
+  const l = (parseInt(bg.slice(1, 3), 16) * 299 + parseInt(bg.slice(3, 5), 16) * 587 + parseInt(bg.slice(5, 7), 16) * 114) / 1000;
+  const col = hx.test(p.color) ? p.color : hx.test(p.bg) ? (l > 140 ? '#2a1c14' : '#fff4e3') : pp[2], sz = Math.min(40, Math.max(12, +p.size || 18));
+  return `background:${bg};color:${col};font-family:${FONTS.includes(p.font) ? p.font : 'Vazirmatn'},Vazirmatn,sans-serif;font-size:${sz}px;text-align:${ALIGN.includes(p.align) ? p.align : 'right'}${TEX[p.tex] ? ';' + TEX[p.tex] : ''}`;
 };
 const showLetter = (el, p, o) => {
   if (p.kind === 'qa') return showQA(el, p, o, H);
@@ -68,32 +72,29 @@ const reveal = (p, o) => {
 
 // ---------- Create wizard ----------
 let S;
-const init = () => S = { step: 0, type: 0, tone: 2, title: '', body: '', sig: '', font: 'Vazirmatn', size: 18, color: '', align: 'right', paper: 'cream', env: ENV[0], seal: '🕊️', inter: 'none', q: '', opts: '', unlock: '', anon: false, name: '', ig: '', tg: '', wa: '', ph: '', web: '', show: true, pw: '', pw2: '' };
+const init = () => S = { step: 0, type: 0, tone: 2, title: '', body: '', sig: '', font: 'Vazirmatn', size: 18, color: '', align: 'right', paper: 'cream', tex: 'none', bg: '', env: ENV[0], seal: '🕊️', inter: 'none', q: '', opts: '', unlock: '', anon: false, name: '', ig: '', tg: '', wa: '', ph: '', web: '', show: true, pw: '', pw2: '' };
 const f = (k, l, t = 'text') => `<label>${l}<input data-k="${k}" type="${t}" value="${esc(S[k])}"></label>`;
 const ta = (k, l, ph = '') => `<label>${l}<textarea data-k="${k}" placeholder="${esc(ph)}">${esc(S[k])}</textarea></label>`;
 const sel = (k, l, o) => `<label>${l}<select data-k="${k}">${o.map((x) => `<option value="${esc(x[0])}" ${S[k] == x[0] ? 'selected' : ''}>${esc(x[1])}</option>`).join('')}</select></label>`;
 const ck = (k, l) => `<label class="ck"><input type="checkbox" data-k="${k}" ${S[k] ? 'checked' : ''}> ${l}</label>`;
-const STEPS = ['نوع', 'لحن', 'نوشتن', 'ظاهر', 'فرستنده', 'رمز', 'پیش‌نمایش'];
-const pay = () => ({ title: S.title.trim(), body: S.body, sig: S.sig, font: S.font, size: +S.size, color: S.color, align: S.align, paper: S.paper, env: S.env, seal: S.seal, tone: S.tone, q: S.q, unlock: S.unlock, name: S.anon ? '' : S.name.trim(), ct: S.show ? { ig: S.ig, tg: S.tg, wa: S.wa, ph: S.ph, web: S.web } : {}, opts: S.inter === 'ch' ? S.opts.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => { const [a, ...b] = l.split('|'); return [a.trim(), b.join('|').trim()]; }) : [] });
+const STEPS = ['نوع و لحن', 'نوشتن', 'تنظیمات', 'رمز و ساخت'];
+const pay = () => ({ title: S.title.trim(), body: S.body, sig: S.sig, font: S.font, size: +S.size, color: S.color, align: S.align, paper: S.paper, tex: S.tex, bg: S.bg, env: S.env, seal: S.seal, tone: S.tone, q: S.q, unlock: S.unlock, name: S.anon ? '' : S.name.trim(), ct: S.show ? { ig: S.ig, tg: S.tg, wa: S.wa, ph: S.ph, web: S.web } : {}, opts: S.inter === 'ch' ? S.opts.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => { const [a, ...b] = l.split('|'); return [a.trim(), b.join('|').trim()]; }) : [] });
 const steps = () => [
-  `<h3>چه نوع نامه‌ای می‌نویسی؟</h3><div class="grid">${T.map((t, i) => `<button class="card ${S.type == i ? 'on' : ''}" data-t="${i}"><i>${t[1]}</i>${t[0]}</button>`).join('')}</div>`,
-  `<h3>لحن نامه</h3><div class="grid">${TONES.map((t, i) => `<button class="card ${S.tone == i ? 'on' : ''}" data-n="${i}">${t[0]}</button>`).join('')}</div><p>لحن فقط روی متن‌های راهنما و پیام‌های سیستمی اثر می‌گذاره؛ متن تو دست‌نخورده می‌مونه.</p>`,
-  `${f('title', 'عنوان')}${ta('body', 'متن نامه', TONES[S.tone][1])}${f('sig', 'امضای پایانی')}<div class="row">${sel('font', 'فونت', [['Vazirmatn', 'وزیر'], ['Tahoma', 'تاهوما'], ['serif', 'سریف'], ['cursive', 'دست‌نویس']])}${f('size', 'اندازه', 'number')}<label>رنگ متن<input type="color" data-k="color" value="${S.color || '#38271F'}"></label>${sel('align', 'تراز', [['right', 'راست'], ['center', 'وسط'], ['justify', 'دوطرفه']])}</div>${sel('paper', 'کاغذ', Object.entries(P).map(([k, v]) => [k, v[0]]))}<div id="lv"></div>`,
-  `<h3>ظاهر و تعامل</h3>رنگ پاکت<div class="sw">${ENV.map((c) => `<button class="sw1 ${S.env == c ? 'on' : ''}" data-e="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div>${sel('seal', 'مهر', ['🕊️', '❤️', '⚜️', '🔑', '🎈', '⏳', '💬', '🌙'].map((x) => [x, x]))}${sel('inter', 'تعامل با گیرنده', [['none', 'بدون تعامل'], ['ch', 'دکمه‌ها / گزینه‌ها']])}${S.inter == 'ch' ? `${f('q', 'سؤال')}${ta('opts', 'هر خط یک گزینه: متن گزینه|پیام بعد از انتخاب (همیشه یک گزینه «رد» بذار)')}` : ''}<label>باز شدن نامه از تاریخ (اختیاری)<input type="datetime-local" data-k="unlock" value="${esc(S.unlock)}"></label>`,
-  `<h3>فرستنده</h3>${ck('anon', 'ارسال ناشناس (نام و اطلاعات تماس پیش‌فرض مخفی)')}${f('name', 'نام یا نام مستعار')}${ck('show', 'نمایش اطلاعات تماس زیر نامه')}${f('ig', 'آیدی اینستاگرام')}${f('tg', 'آیدی تلگرام')}${f('wa', 'شماره واتساپ')}${f('ph', 'شماره تماس')}${f('web', 'وب‌سایت (https://...)')}<small>همه اختیاری‌ان.</small>`,
-  `<h3>رمز نامه</h3><label>رمز<input data-k="pw" type="password" autocomplete="new-password" value="${esc(S.pw)}"></label><div class="sm"><i id="sm"></i></div><label>تکرار رمز<input data-k="pw2" type="password" value="${esc(S.pw2)}"></label>${ck('sp', 'نمایش رمز').replace('data-k="sp"', 'id="sp"')}<small>حداقل ۸ نویسه، ترکیب حروف، عدد و علامت. رمز را جدا از لینک به مخاطبت بگو. اگه رمز گم بشه، نامه قابل بازیابی نیست.</small>`,
-  `<h3>پیش‌نمایش (همون چیزی که گیرنده می‌بینه)</h3><div class="mid">${stageH()}<button class="btn ghost" id="pv">باز کردن</button></div><button class="btn" id="mk">ساخت نامه و دریافت لینک</button>`
+  `<h3>نوع نامه</h3><div class="grid">${T.map((t, i) => `<button class="card ${S.type == i ? 'on' : ''}" data-t="${i}"><i>${t[1]}</i>${t[0]}</button>`).join('')}</div><h3>لحن نامه</h3><div class="grid">${TONES.map((t, i) => `<button class="card ${S.tone == i ? 'on' : ''}" data-n="${i}">${t[0]}</button>`).join('')}</div><small>لحن فقط روی متن‌های راهنما و پیام‌های سیستمی اثر می‌گذاره؛ متن تو دست‌نخورده می‌مونه.</small>`,
+  `${f('title', 'عنوان')}${ta('body', 'متن نامه', TONES[S.tone][1])}${f('sig', 'امضای پایانی')}<div class="row">${sel('font', 'فونت', [['Vazirmatn', 'وزیر'], ['Tahoma', 'تاهوما'], ['serif', 'سریف'], ['cursive', 'دست‌نویس']])}${f('size', 'اندازه', 'number')}<label>رنگ متن<input type="color" data-k="color" value="${S.color || '#38271F'}"></label>${sel('align', 'تراز', [['right', 'راست'], ['center', 'وسط'], ['justify', 'دوطرفه']])}</div><div class="row">${sel('paper', 'کاغذ', Object.entries(P).map(([k, v]) => [k, v[0]]))}${sel('tex', 'بافت کاغذ', TXO)}<label>رنگ پس‌زمینه دلخواه<input type="color" data-k="bg" value="${S.bg || '#FFF4E3'}"></label></div><button class="btn ghost" data-rbg="1">رنگ پیش‌فرض کاغذ</button><div id="lv"></div>`,
+  `<h3>پاکت و تعامل</h3><div class="sw">${ENV.map((c) => `<button class="sw1 ${S.env == c ? 'on' : ''}" data-e="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div><div class="row">${sel('seal', 'مهر', ['🕊️', '❤️', '⚜️', '🔑', '🎈', '⏳', '💬', '🌙'].map((x) => [x, x]))}${sel('inter', 'تعامل با گیرنده', [['none', 'بدون تعامل'], ['ch', 'دکمه‌ها / گزینه‌ها']])}</div>${S.inter == 'ch' ? `${f('q', 'سؤال')}${ta('opts', 'هر خط یک گزینه: متن گزینه|پیام بعد از انتخاب (همیشه یک گزینه «رد» بذار)')}` : ''}<label>باز شدن نامه از تاریخ (اختیاری)<input type="datetime-local" data-k="unlock" value="${esc(S.unlock)}"></label><h3>فرستنده (اختیاری)</h3>${ck('anon', 'ارسال ناشناس (نام و اطلاعات تماس پیش‌فرض مخفی)')}<div class="row">${f('name', 'نام یا نام مستعار')}</div>${ck('show', 'نمایش اطلاعات تماس زیر نامه')}<div class="row">${f('ig', 'اینستاگرام')}${f('tg', 'تلگرام')}${f('wa', 'واتساپ')}${f('ph', 'شماره تماس')}${f('web', 'وب‌سایت')}</div>`,
+  `<h3>رمز نامه</h3><div class="row"><label>رمز<input data-k="pw" type="password" autocomplete="new-password" value="${esc(S.pw)}"></label><label>تکرار رمز<input data-k="pw2" type="password" value="${esc(S.pw2)}"></label></div><div class="sm"><i id="sm"></i></div>${ck('sp', 'نمایش رمز').replace('data-k="sp"', 'id="sp"')}<small>حداقل ۸ نویسه، ترکیب حروف، عدد و علامت. رمز را جدا از لینک به مخاطبت بگو. اگه رمز گم بشه، نامه قابل بازیابی نیست.</small><h3>پیش‌نمایش</h3><div class="mid">${stageH()}<button class="btn ghost" id="pv">باز کردن</button></div><button class="btn" id="mk">ساخت نامه و دریافت لینک</button>`
 ];
 function draw() {
-  view(`<div class="panel"><div class="pb">${STEPS.map((s, i) => `<span class="${i <= S.step ? 'on' : ''}">${s}</span>`).join('')}</div>${steps()[S.step]}<div class="nav">${S.step ? '<button class="btn ghost" id="bk">قبلی</button>' : '<span></span>'}${S.step < 6 ? '<button class="btn" id="nx">بعدی</button>' : ''}</div></div>`);
+  view(`<div class="panel"><div class="pb">${STEPS.map((s, i) => `<span class="${i < S.step ? 'dn' : ''} ${i == S.step ? 'on' : ''}"><b>${i + 1}</b>${s}</span>`).join('')}</div>${steps()[S.step]}<div class="nav">${S.step ? '<button class="btn ghost" id="bk">قبلی</button>' : '<span></span>'}${S.step < 3 ? '<button class="btn" id="nx">بعدی</button>' : ''}</div></div>`);
   upd(); strength();
 }
 const upd = () => { const e = $('#lv'); if (e) { const p = pay(); e.innerHTML = `<div class="paper ${p.paper === 'texture' ? 'tx' : ''}" style="${pst(p)}"><h2>${esc(p.title) || 'عنوان'}</h2><div class="bd2">${esc(p.body)}</div><p>${esc(p.sig)}</p></div>`; } };
 const strength = () => { const e = $('#sm'); if (!e) return; const w = S.pw, s = (w.length >= 8) + (w.length >= 12) + /[A-Za-z]/.test(w) + /\d/.test(w) + /[^\w\s]/.test(w); e.style.width = s * 20 + '%'; e.style.background = s < 3 ? '#c0392b' : s < 5 ? '#E88B32' : '#4a9a4a'; };
 const chk = () => {
-  if (S.step == 2 && (!S.title.trim() || !S.body.trim())) return 'عنوان و متن نامه را بنویس';
-  if (S.step == 3 && S.inter == 'ch' && pay().opts.length < 2) return 'حداقل دو گزینه لازمه';
-  if (S.step == 5) { if (S.pw.length < 8) return 'رمز باید حداقل ۸ نویسه باشه'; if (S.pw !== S.pw2) return 'تکرار رمز مطابقت نداره'; }
+  if (S.step == 1 && (!S.title.trim() || !S.body.trim())) return 'عنوان و متن نامه را بنویس';
+  if (S.step == 2 && S.inter == 'ch' && pay().opts.length < 2) return 'حداقل دو گزینه لازمه';
+  if (S.step == 3) { if (S.pw.length < 8) return 'رمز باید حداقل ۸ نویسه باشه'; if (S.pw !== S.pw2) return 'تکرار رمز مطابقت نداره'; }
 };
 async function make(btn) {
   btn.disabled = true; btn.textContent = 'در حال ساخت…';
@@ -151,10 +152,13 @@ const footLinks = () => { const l = C.creator.links; return { ig: l.instagram.sp
 // ---------- Router & events ----------
 function route() {
   const [, a, b] = (location.hash.slice(1) || '/').split('/');
+  document.querySelectorAll('nav a').forEach((x) => x.classList.toggle('on', x.dataset.nv == a));
   if (a == 'create') { if (!S) init(); draw(); } else if (a == 'about') about(); else if (a == 'privacy') privacy(); else if (a == 'qa') qaCreate(H); else if (a == 'l') recv(b); else if (a == 'm') manage(b); else home();
 }
 addEventListener('hashchange', route);
 const nm = { instagram: 'اینستاگرام', telegram: 'تلگرام', whatsapp: 'واتساپ', email: 'ایمیل', website: 'وب‌سایت' };
+const NAV = [['create', 'ساخت نامه', '<path d="M3 6h18v12H3z"/><path d="M3 7l9 7 9-7"/>'], ['qa', 'سوال و جواب', '<path d="M4 5h16v11H9l-5 4z"/>'], ['about', 'درباره', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'], ['privacy', 'حریم خصوصی', '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>']];
+$('nav').innerHTML = NAV.map(([k, t, d]) => `<a href="#/${k}" data-nv="${k}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg><span>${t}</span></a>`).join('');
 $('#ft').innerHTML = `نامه‌باز · ${esc(C.creator.name)} ` + Object.entries(C.creator.links).filter(([, v]) => v).map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener noreferrer">${nm[k]}</a>`).join(' · ');
 document.addEventListener('input', (e) => {
   const k = e.target.dataset.k; if (!k) return;
@@ -167,13 +171,14 @@ document.addEventListener('click', async (e) => {
   if (D.t) { const y = T[D.t]; S.type = +D.t; S.paper = y[2]; S.seal = y[4]; S.inter = y[3] ? 'ch' : 'none'; S.opts = y[3]; draw(); }
   else if (D.n) { S.tone = +D.n; draw(); }
   else if (D.e) { S.env = D.e; draw(); }
+  else if (D.rbg) { S.bg = ''; draw(); }
   else if (D.sc !== undefined) $('#how').scrollIntoView({ behavior: 'smooth' });
   else if (D.cp) { try { await navigator.clipboard.writeText(D.cp); toast('کپی شد ✓'); } catch { toast('کپی نشد؛ دستی انتخاب کن'); } }
   else if (D.sh) { navigator.share ? navigator.share({ title: 'نامه‌باز', url: D.sh }).catch(() => {}) : toast('مرورگر از اشتراک‌گذاری پشتیبانی نمی‌کنه؛ لینک رو کپی کن'); }
   else if (t.id == 'nx') { const m = chk(); m ? toast(m) : (S.step++, draw()); }
   else if (t.id == 'bk') { S.step--; draw(); }
   else if (t.id == 'pv') { t.remove(); reveal(pay(), { preview: true }); }
-  else if (t.id == 'mk') make(t);
+  else if (t.id == 'mk') { const m = chk(); m ? toast(m) : make(t); }
 });
 document.addEventListener('change', (e) => { if (e.target.id == 'sp') document.querySelectorAll('[data-k=pw],[data-k=pw2]').forEach((i) => i.type = e.target.checked ? 'text' : 'password'); });
 const H = { rpc, kdf, seal, imp, sha, rkb, b64, ub64, rnd, esc, view, toast, pst, links };
