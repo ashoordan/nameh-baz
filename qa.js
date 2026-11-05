@@ -52,7 +52,7 @@ export function showQA(el, p, o, H) {
       return block;
     };
     yb.onclick = () => ans(0, yb);
-    nb.addEventListener('pointerenter', (e) => { if (e.pointerType == 'mouse' && mv) att(); });
+    nb.addEventListener('pointerenter', (e) => { if (e.pointerType == 'mouse' && kind == 'dodge') att(); });
     nb.onclick = () => { if (!att()) ans(1, nb); };
   };
   step();
