@@ -47,3 +47,4 @@ input[type=checkbox]{width:auto}textarea{min-height:130px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .qb{display:flex;justify-content:center;align-items:center;gap:20px;min-height:140px;flex-wrap:wrap}.qb .btn{transition:transform .25s}.paper.qa h2{margin-bottom:18px}.pop{animation:pop .5s}@keyframes pop{50%{transform:scale(1.4)}}
+.qb.rv{flex-direction:row-reverse}.dm{min-height:1.8em;color:#c0392b;font-weight:700}
